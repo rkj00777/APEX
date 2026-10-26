@@ -217,7 +217,7 @@ def add_signals(eq: pd.DataFrame, fno: pd.DataFrame) -> pd.DataFrame:
     d["gap_go"] = (d.open > prior_high * 1.005) & (d.close > d.open) & \
                   (d.close > d.ema20) & (d.volume >= 1.5 * prior_volume)
     d["signal"] = d[["breakout","compression","gap_go"]].fillna(False).any(axis=1)
-    d["signal_type"] = d.apply(lambda r: "+".join(k for k in ("breakout","compression","gap_go") if bool(r.get(k,False))), axis=1)
+    d["signal_type"] = d.apply(lambda r: "+".join(k for k in ("breakout","compression","gap_go") if pd.notna(r.get(k, False)) and bool(r.get(k, False))), axis=1)
     return d
 
 def choose_option(fno: pd.DataFrame, symbol: str, signal_date: pd.Timestamp, entry_date: pd.Timestamp, spot: float) -> pd.Series | None:
