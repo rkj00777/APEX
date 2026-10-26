@@ -1,5 +1,9 @@
 name: Derivative Momentum Engine
 on:
+  push:
+    paths:
+      - "derivative-momentum/**"
+      - ".github/workflows/derivative-momentum.yml"
   workflow_dispatch:
     inputs:
       mode:
@@ -13,7 +17,7 @@ on:
         required: true
         default: "2024-01-01"
       end:
-        description: "End date (YYYY-MM-DD)"
+        description: "End date (YYYY-MM-DD; blank not allowed in manual UI, use today's date)"
         required: true
         default: "2026-10-26"
   schedule:
@@ -37,8 +41,8 @@ jobs:
       - name: Run engine
         working-directory: derivative-momentum
         env:
-          MODE: ${{ inputs.mode || 'scan' }}
-          START_DATE: ${{ inputs.start || '2026-01-01' }}
+          MODE: ${{ inputs.mode || (github.event_name == 'push' && 'backtest' || 'scan') }}
+          START_DATE: ${{ inputs.start || '2024-01-01' }}
           END_DATE: ${{ inputs.end || '' }}
         run: |
           if [ "$MODE" = "backtest" ]; then
