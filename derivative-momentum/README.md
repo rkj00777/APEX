@@ -5,13 +5,13 @@ This is an independently runnable research engine. It uses public NSE daily deri
 ## What it does
 - Blindly derives the F&O stock universe from official NSE daily derivatives bhavcopies.
 - Builds three daily-close signal families: 20-session breakout + volume confirmation; 3-session compression with futures OI buildup; gap-and-go.
-- Adds EMA20/EMA50, relative strength vs Nifty 50, futures price/OI classification, and a conservative ban-list exclusion when the report is available.
+- Adds EMA20/EMA50, relative strength vs Nifty 50 when the free benchmark endpoint is available, and futures price/OI classification. Historical MWPL/ban-list gating is not yet implemented; do not use this build for live trade decisions.
 - Backtests option calls using real daily option OHLC from NSE bhavcopies: signal after close, next-session option open entry, target/stop checks on subsequent option OHLC, max 3-session hold, estimated transaction/slippage cost.
 - Emits CSV trades, daily scan, metrics JSON, and data-quality report.
 - GitHub Actions can run manually or on weekdays. Artifacts are downloadable from the workflow run.
 
 ## Important scope boundary
-Public EOD data cannot validate 3:15 PM intraday signals, first-five-minute execution, intraday volume-at-time, or intraday option fills. This engine therefore uses **completed daily candles only** and never claims to reproduce an intraday strategy. Daily OHLC stop/target order is ambiguous if both levels are touched in one candle; the backtest applies the conservative stop-first rule. This is research, not a production-ready trading system.
+Public EOD data cannot validate 3:15 PM intraday signals, first-five-minute execution, intraday volume-at-time, or intraday option fills. This engine therefore uses **completed daily candles only** and never claims to reproduce an intraday strategy. Daily OHLC stop/target order is ambiguous if both levels are touched in one candle; the backtest applies the conservative stop-first rule. This is a research prototype, not a production-ready trading system. In particular, historical ban-list/MWPL eligibility, contract lot-size history, point-in-time F&O eligibility, and full Indian brokerage/tax charges remain validation gates.
 
 ## Run
 ```bash
