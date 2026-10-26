@@ -92,7 +92,8 @@ def read_equity(start: str, end: str) -> pd.DataFrame:
 
 def fno_url(day: date) -> str:
     if day <= OLD_CUTOFF:
-        return f"https://archives.nseindia.com/content/historical/DERIVATIVES/{day:%Y}/{day:%b.upper()}/fo{day:%d%b%Y}.bhav.csv.zip"
+        month = day.strftime("%b").upper()
+        return f"https://archives.nseindia.com/content/historical/DERIVATIVES/{day:%Y}/{month}/fo{day:%d}{month}{day:%Y}bhav.csv.zip"
     return f"https://archives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_{day:%Y%m%d}_F_0000.csv.zip"
 
 def parse_fno_bytes(blob: bytes, day: date) -> pd.DataFrame:
