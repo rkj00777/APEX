@@ -175,7 +175,7 @@ def add_signals(eq: pd.DataFrame, fno: pd.DataFrame) -> pd.DataFrame:
     d["prior20_high"] = g.high.transform(lambda x: x.shift(1).rolling(20, min_periods=20).max())
     d["vol_sma20"] = g.volume.transform(lambda x: x.shift(1).rolling(20, min_periods=20).mean())
     d["ret1"] = g.close.pct_change()
-    d["ret3"] = g.close / g.close.groupby(d.symbol).shift(3) - 1
+    d["ret3"] = g.close.pct_change(3)
     # Yahoo's free chart endpoint supplies Nifty 50 only as a benchmark; if unavailable, RS is explicitly null.
     try:
         p1 = int(pd.Timestamp(d.date.min()).timestamp())
