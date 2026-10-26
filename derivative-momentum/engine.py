@@ -92,7 +92,7 @@ def read_equity(start: str, end: str) -> pd.DataFrame:
 
 def fno_url(day: date) -> str:
     if day <= OLD_CUTOFF:
-        return f"https://archives.nseindia.com/content/historical/DERIVATIVES/{day:%Y}/{day:%b}/fo{day:%d%b%Y}.bhav.csv.zip"
+        return f"https://archives.nseindia.com/content/historical/DERIVATIVES/{day:%Y}/{day:%b.upper()}/fo{day:%d%b%Y}.bhav.csv.zip"
     return f"https://archives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_{day:%Y%m%d}_F_0000.csv.zip"
 
 def parse_fno_bytes(blob: bytes, day: date) -> pd.DataFrame:
@@ -207,12 +207,14 @@ def add_signals(eq: pd.DataFrame, fno: pd.DataFrame) -> pd.DataFrame:
     d["long_buildup"] = (d.fut_ret1 > 0) & (d.fut_oi_chg3 > 0)
     d["short_covering"] = (d.fut_ret1 > 0) & (d.fut_oi_chg3 < 0)
     d["breakout"] = (d.close > d.ema20) & (d.close > d.ema50) & (d.close > d.prior20_high) & (d.volume >= 2*d.vol_sma20) & (d.ret1 >= .02)
-    d["compression"] = ((g.high.transform(lambda x: x.rolling(3,min_periods=3).max()) /
-                          g.low.transform(lambda x: x.rolling(3,min_periods=3).min()) - 1) <= .04) & \
+    rolling_high3 = d.groupby("symbol").high.transform(lambda x: x.rolling(3, min_periods=3).max())
+    rolling_low3 = d.groupby("symbol").low.transform(lambda x: x.rolling(3, min_periods=3).min())
+    prior_high = d.groupby("symbol").high.shift(1)
+    prior_volume = d.groupby("symbol").volume.shift(1)
+    d["compression"] = ((rolling_high3 / rolling_low3 - 1) <= .04) & \
                        (d.fut_oi_chg3 >= .04) & (d.close > d.ema20) & (d.volume > d.vol_sma20)
-    d["gap_go"] = (d.open > g.high.transform(lambda x: x.shift(1)) * 1.005) & \
-                  (d.close > d.open) & (d.close > d.ema20) & \
-                  (d.volume >= 1.5*g.volume.transform(lambda x: x.shift(1)))
+    d["gap_go"] = (d.open > prior_high * 1.005) & (d.close > d.open) & \
+                  (d.close > d.ema20) & (d.volume >= 1.5 * prior_volume)
     d["signal"] = d[["breakout","compression","gap_go"]].fillna(False).any(axis=1)
     d["signal_type"] = d.apply(lambda r: "+".join(k for k in ("breakout","compression","gap_go") if bool(r.get(k,False))), axis=1)
     return d
