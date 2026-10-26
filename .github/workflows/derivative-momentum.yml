@@ -25,6 +25,9 @@ on:
 permissions:
   contents: read
   actions: read
+concurrency:
+  group: derivative-momentum-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   run-engine:
     runs-on: ubuntu-latest
@@ -38,6 +41,9 @@ jobs:
           cache-dependency-path: derivative-momentum/requirements.txt
       - name: Install dependencies
         run: pip install -r derivative-momentum/requirements.txt
+      - name: Syntax validation
+        working-directory: derivative-momentum
+        run: python -m compileall -q engine.py
       - name: Run engine
         working-directory: derivative-momentum
         env:
